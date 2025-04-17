@@ -4,7 +4,7 @@
   background-color: white;
   border: 1px solid #ddd;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  width: 180px;
+  width: 220px;
   font-family: Arial, sans-serif;
   transition: all 0.2s ease;
 }
@@ -22,8 +22,9 @@
 
 .custom-node-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 8px;
 }
 
 .custom-node-label {
@@ -31,6 +32,7 @@
   font-size: 14px;
   color: #333;
   word-break: break-word;
+  flex-grow: 1;
 }
 
 .custom-node-description {
@@ -39,6 +41,8 @@
   word-break: break-word;
   max-height: 60px;
   overflow-y: auto;
+  border-top: 1px solid #eee;
+  padding-top: 5px;
 }
 
 /* Handle styles */
@@ -56,18 +60,100 @@
   bottom: -4px;
 }
 
-/* Different node types can have different colors */
-.custom-node.input {
+/* Node type styles */
+.custom-node.project-node {
   background-color: #f0f7ff;
   border-color: #a3c4f3;
 }
 
-.custom-node.output {
+.custom-node.task-node {
+  background-color: #fff;
+  border-color: #ddd;
+}
+
+.custom-node.completed-node {
   background-color: #f0fff4;
   border-color: #a3f3c0;
 }
 
-.custom-node.default {
-  background-color: #fff;
-  border-color: #ddd;
+/* Collapse/expand icon */
+.collapse-icon {
+  cursor: pointer;
+  font-size: 12px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  background-color: #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.collapse-icon:hover {
+  background-color: #e0e0e0;
+}
+
+.collapse-icon.collapsed {
+  color: #666;
+}
+
+.collapse-icon.expanded {
+  color: #333;
+}
+
+/* Node type badge */
+.node-type-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background-color: #e6f0ff;
+  color: #4d7cc7;
+  font-weight: bold;
+}
+
+/* Metadata styling */
+.custom-node-metadata {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: #666;
+  border-top: 1px solid #eee;
+  padding-top: 5px;
+}
+
+.metadata-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.metadata-label {
+  font-weight: bold;
+  color: #888;
+}
+
+.metadata-value {
+  color: #555;
+}
+
+/* Comment styling */
+.custom-node-comment {
+  font-size: 11px;
+  background-color: #fffbf0;
+  border-radius: 4px;
+  padding: 5px;
+  border-left: 3px solid #ffd980;
+  margin-top: 5px;
+}
+
+.comment-label {
+  font-weight: bold;
+  color: #b38600;
+  margin-bottom: 2px;
+}
+
+.comment-text {
+  color: #666;
+  word-break: break-word;
 }
