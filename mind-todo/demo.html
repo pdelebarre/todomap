@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind-Todo Demo</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166d3b;
+            --accent-color: #ff6b6b;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --text-light: #666666;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: var(--card-background);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: var(--card-background);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .task-item {
+            padding: 12px;
+            border-radius: 6px;
+            background-color: var(--background-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .task-item:hover {
+            background-color: rgba(74, 111, 165, 0.1);
+        }
+
+        .task-item.active {
+            background-color: rgba(74, 111, 165, 0.2);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .task-title {
+            font-weight: 500;
+        }
+
+        .task-date {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .task-description {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+
+        .task-priority {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+        }
+
+        .priority-medium {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+        }
+
+        .priority-low {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+        }
+
+        .mind-map-container {
+            flex: 1;
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--background-color);
+        }
+
+        .mind-map {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .node {
+            position: absolute;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 10px 15px;
+            width: 200px;
+            cursor: move;
+            user-select: none;
+            transition: var(--transition);
+        }
+
+        .node:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .node-title {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .node-content {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .node-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+
+        .node-progress {
+            width: 60px;
+            height: 6px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .node-progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+
+        .edge {
+            position: absolute;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+        }
+
+        .toolbar {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            background-color: var(--card-background);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .toolbar-button {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toolbar-button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6a6 6 0 0 0-6 6c0 3.314 2.686 6 6 6s6-2.686 6-6"></path>
+                    <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
+                    <path d="M16 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
+                    <path d="M12 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
+                </svg>
+                <span>Mind-Todo</span>
+            </div>
+            <div class="header-actions">
+                <button class="button primary-btn" id="new-mind-map">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Mind Map
+                </button>
+            </div>
+        </header>
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">Tasks</h2>
+                </div>
+                <div class="sidebar-content">
+                    <div class="task-list">
+                        <div class="task-item active">
+                            <div class="task-header">
+                                <div class="task-title">Project Planning</div>
+                                <div class="task-date">Apr 20</div>
+                            </div>
+                            <div class="task-description">Create a project plan for the new feature</div>
+                            <div class="task-footer">
+                                <div class="task-priority priority-high">High</div>
+                                <div class="task-progress">30% complete</div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-header">
+                                <div class="task-title">Research Competitors</div>
+                                <div class="task-date">Apr 22</div>
+                            </div>
+                            <div class="task-description">Analyze competitor products and features</div>
+                            <div class="task-footer">
+                                <div class="task-priority priority-medium">Medium</div>
+                                <div class="task-progress">0% complete</div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-header">
+                                <div class="task-title">Design Mockups</div>
+                                <div class="task-date">Apr 25</div>
+                            </div>
+                            <div class="task-description">Create UI mockups for the new dashboard</div>
+                            <div class="task-footer">
+                                <div class="task-priority priority-medium">Medium</div>
+                                <div class="task-progress">0% complete</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mind-map-container">
+                <div class="mind-map" id="mind-map">
+                    <!-- Nodes will be added here dynamically -->
+                </div>
+                <div class="toolbar">
+                    <div class="toolbar-button" id="add-node" title="Add Node">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </div>
+                    <div class="toolbar-button" id="save" title="Save">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                    </div>
+                    <div class="toolbar-button" id="fit-view" title="Fit View">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <polyline points="9 21 3 21 3 15"></polyline>
+                            <line x1="21" y1="3" x2="14" y2="10"></line>
+                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mindMap = document.getElementById('mind-map');
+            const addNodeButton = document.getElementById('add-node');
+            const newMindMapButton = document.getElementById('new-mind-map');
+            
+            // Sample data for nodes
+            const nodes = [
+                {
+                    id: 'node1',
+                    title: 'Project Planning',
+                    description: 'Create a project plan for the new feature',
+                    priority: 'high',
+                    progress: 30,
+                    x: 400,
+                    y: 200
+                },
+                {
+                    id: 'node2',
+                    title: 'Research',
+                    description: 'Analyze competitor products',
+                    priority: 'medium',
+                    progress: 0,
+                    x: 650,
+                    y: 100
+                },
+                {
+                    id: 'node3',
+                    title: 'Design',
+                    description: 'Create UI mockups',
+                    priority: 'medium',
+                    progress: 0,
+                    x: 650,
+                    y: 300
+                }
+            ];
+            
+            // Sample data for edges
+            const edges = [
+                { from: 'node1', to: 'node2' },
+                { from: 'node1', to: 'node3' }
+            ];
+            
+            // Create nodes
+            nodes.forEach(node => {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'node';
+                nodeElement.id = node.id;
+                nodeElement.style.left = `${node.x}px`;
+                nodeElement.style.top = `${node.y}px`;
+                nodeElement.style.backgroundColor = node.priority === 'high' ? '#e3f2fd' : '#e8f5e9';
+                
+                nodeElement.innerHTML = `
+                    <div class="node-header">
+                        <div class="node-title">${node.title}</div>
+                    </div>
+                    <div class="node-content">${node.description}</div>
+                    <div class="node-footer">
+                        <div class="task-priority priority-${node.priority}">${node.priority}</div>
+                        <div class="node-progress">
+                            <div class="node-progress-bar" style="width: ${node.progress}%"></div>
+                        </div>
+                    </div>
+                `;
+                
+                // Make nodes draggable
+                nodeElement.addEventListener('mousedown', startDrag);
+                
+                mindMap.appendChild(nodeElement);
+            });
+            
+            // Create edges
+            edges.forEach(edge => {
+                drawEdge(edge.from, edge.to);
+            });
+            
+            // Function to create a new node
+            function createNewNode(title, description, priority, x, y) {
+                const newNodeId = `node${nodes.length + 1}`;
+                const newNode = {
+                    id: newNodeId,
+                    title: title || 'New Task',
+                    description: description || 'Task description',
+                    priority: priority || 'medium',
+                    progress: 0,
+                    x: x || 400,
+                    y: y || 400
+                };
+                
+                nodes.push(newNode);
+                
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'node';
+                nodeElement.id = newNode.id;
+                nodeElement.style.left = `${newNode.x}px`;
+                nodeElement.style.top = `${newNode.y}px`;
+                nodeElement.style.backgroundColor = priority === 'high' ? '#e3f2fd' : '#e8f5e9';
+                
+                nodeElement.innerHTML = `
+                    <div class="node-header">
+                        <div class="node-title">${newNode.title}</div>
+                    </div>
+                    <div class="node-content">${newNode.description}</div>
+                    <div class="node-footer">
+                        <div class="task-priority priority-${newNode.priority}">${newNode.priority}</div>
+                        <div class="node-progress">
+                            <div class="node-progress-bar" style="width: ${newNode.progress}%"></div>
+                        </div>
+                    </div>
+                `;
+                
+                nodeElement.addEventListener('mousedown', startDrag);
+                
+                mindMap.appendChild(nodeElement);
+                
+                return newNode;
+            }
+            
+            // Add new node when clicking the add button
+            addNodeButton.addEventListener('click', () => {
+                const newNode = createNewNode('New Task', 'Task description', 'medium');
+                
+                // Connect to the first node if it exists
+                if (nodes.length > 1) {
+                    const newEdge = { from: 'node1', to: newNode.id };
+                    edges.push(newEdge);
+                    drawEdge(newEdge.from, newEdge.to);
+                }
+            });
+            
+            // Create a new mind map when clicking the new mind map button
+            newMindMapButton.addEventListener('click', () => {
+                // Clear existing nodes and edges
+                mindMap.innerHTML = '';
+                nodes.length = 0;
+                edges.length = 0;
+                
+                // Create a central node for the new mind map
+                const centralNode = createNewNode('Main Topic', 'Central idea for your mind map', 'high', 400, 200);
+                
+                // Create a few connected nodes
+                const node2 = createNewNode('Subtopic 1', 'First branch of your mind map', 'medium', 650, 100);
+                const node3 = createNewNode('Subtopic 2', 'Second branch of your mind map', 'medium', 650, 300);
+                
+                // Create edges
+                edges.push({ from: centralNode.id, to: node2.id });
+                edges.push({ from: centralNode.id, to: node3.id });
+                
+                // Draw edges
+                edges.forEach(edge => {
+                    drawEdge(edge.from, edge.to);
+                });
+                
+                alert('New mind map created! You can now add more nodes and organize your ideas.');
+            });
+            
+            // Dragging functionality
+            let activeNode = null;
+            let initialX, initialY;
+            let currentX, currentY;
+            let xOffset = 0, yOffset = 0;
+            
+            function startDrag(e) {
+                activeNode = e.target.closest('.node');
+                if (!activeNode) return;
+                
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+                
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', endDrag);
+            }
+            
+            function drag(e) {
+                if (activeNode) {
+                    e.preventDefault();
+                    
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    
+                    const nodeId = activeNode.id;
+                    const nodeIndex = nodes.findIndex(n => n.id === nodeId);
+                    
+                    if (nodeIndex !== -1) {
+                        nodes[nodeIndex].x += e.movementX;
+                        nodes[nodeIndex].y += e.movementY;
+                        
+                        activeNode.style.left = `${nodes[nodeIndex].x}px`;
+                        activeNode.style.top = `${nodes[nodeIndex].y}px`;
+                        
+                        // Update connected edges
+                        const connectedEdges = edges.filter(edge => edge.from === nodeId || edge.to === nodeId);
+                        connectedEdges.forEach(edge => {
+                            const edgeElement = document.getElementById(`edge-${edge.from}-${edge.to}`);
+                            if (edgeElement) {
+                                edgeElement.remove();
+                            }
+                            drawEdge(edge.from, edge.to);
+                        });
+                    }
+                }
+            }
+            
+            function endDrag() {
+                initialX = currentX;
+                initialY = currentY;
+                
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('mouseup', endDrag);
+                activeNode = null;
+            }
+            
+            // Draw an edge between two nodes
+            function drawEdge(fromId, toId) {
+                const fromNode = document.getElementById(fromId);
+                const toNode = document.getElementById(toId);
+                
+                if (!fromNode || !toNode) return;
+                
+                const fromRect = fromNode.getBoundingClientRect();
+                const toRect = toNode.getBoundingClientRect();
+                
+                const mindMapRect = mindMap.getBoundingClientRect();
+                
+                const fromX = fromRect.left + fromRect.width / 2 - mindMapRect.left;
+                const fromY = fromRect.top + fromRect.height / 2 - mindMapRect.top;
+                const toX = toRect.left + toRect.width / 2 - mindMapRect.left;
+                const toY = toRect.top + toRect.height / 2 - mindMapRect.top;
+                
+                const edgeId = `edge-${fromId}-${toId}`;
+                let edgeElement = document.getElementById(edgeId);
+                
+                if (!edgeElement) {
+                    edgeElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    edgeElement.setAttribute('id', edgeId);
+                    edgeElement.setAttribute('class', 'edge');
+                    edgeElement.style.position = 'absolute';
+                    edgeElement.style.top = '0';
+                    edgeElement.style.left = '0';
+                    edgeElement.style.width = '100%';
+                    edgeElement.style.height = '100%';
+                    edgeElement.style.pointerEvents = 'none';
+                    edgeElement.innerHTML = `
+                        <path d="M${fromX},${fromY} C${(fromX + toX) / 2},${fromY} ${(fromX + toX) / 2},${toY} ${toX},${toY}"
+                              stroke="#555" stroke-width="2" fill="none" />
+                    `;
+                    
+                    mindMap.appendChild(edgeElement);
+                } else {
+                    edgeElement.innerHTML = `
+                        <path d="M${fromX},${fromY} C${(fromX + toX) / 2},${fromY} ${(fromX + toX) / 2},${toY} ${toX},${toY}"
+                              stroke="#555" stroke-width="2" fill="none" />
+                    `;
+                }
+            }
+            
+            // Add functionality to the fit view button
+            const fitViewButton = document.getElementById('fit-view');
+            fitViewButton.addEventListener('click', () => {
+                if (nodes.length === 0) return;
+                
+                // Find the bounding box of all nodes
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                nodes.forEach(node => {
+                    minX = Math.min(minX, node.x);
+                    minY = Math.min(minY, node.y);
+                    maxX = Math.max(maxX, node.x + 200); // Node width is 200px
+                    maxY = Math.max(maxY, node.y + 100); // Approximate node height
+                });
+                
+                // Calculate center point
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+                
+                // Calculate the container dimensions
+                const containerWidth = mindMap.clientWidth;
+                const containerHeight = mindMap.clientHeight;
+                
+                // Calculate the width and height of the bounding box
+                const width = maxX - minX;
+                const height = maxY - minY;
+                
+                // Calculate the scale factor to fit all nodes
+                const scaleX = containerWidth / (width * 1.5); // Add some padding
+                const scaleY = containerHeight / (height * 1.5);
+                const scale = Math.min(scaleX, scaleY, 1); // Don't zoom in more than 100%
+                
+                // Reposition all nodes
+                nodes.forEach(node => {
+                    const nodeElement = document.getElementById(node.id);
+                    if (nodeElement) {
+                        // Adjust position to center and scale
+                        const newX = (node.x - centerX) * scale + containerWidth / 2;
+                        const newY = (node.y - centerY) * scale + containerHeight / 2;
+                        
+                        // Update node position
+                        node.x = newX;
+                        node.y = newY;
+                        nodeElement.style.left = `${newX}px`;
+                        nodeElement.style.top = `${newY}px`;
+                    }
+                });
+                
+                // Redraw all edges
+                edges.forEach(edge => {
+                    const edgeElement = document.getElementById(`edge-${edge.from}-${edge.to}`);
+                    if (edgeElement) {
+                        edgeElement.remove();
+                    }
+                    drawEdge(edge.from, edge.to);
+                });
+                
+                alert('View adjusted to fit all nodes!');
+            });
+        });
+    </script>
+</body>
+</html>

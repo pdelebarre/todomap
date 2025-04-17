@@ -1,0 +1,120 @@
+.node-controls {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  width: 300px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.node-controls h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 18px;
+}
+
+.node-controls h4 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: #555;
+  font-size: 16px;
+}
+
+.control-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.control-btn, .layout-btn, .focus-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.control-btn {
+  background-color: #2196f3;
+  color: white;
+  flex: 1;
+  min-width: 80px;
+}
+
+.control-btn:hover {
+  background-color: #0b7dda;
+}
+
+.layout-btn {
+  background-color: #9c27b0;
+  color: white;
+  flex: 1;
+}
+
+.layout-btn:hover {
+  background-color: #7b1fa2;
+}
+
+.circle-layout {
+  background-color: #ff9800;
+}
+
+.circle-layout:hover {
+  background-color: #e68a00;
+}
+
+.grid-layout {
+  background-color: #4caf50;
+}
+
+.grid-layout:hover {
+  background-color: #45a049;
+}
+
+.node-focus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.focus-btn {
+  background-color: #607d8b;
+  color: white;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focus-btn:hover {
+  background-color: #455a64;
+}
+
+/* Scrollbar styling for the node focus list */
+.node-focus-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.node-focus-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.node-focus-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.node-focus-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
