@@ -2,7 +2,24 @@ import React, { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import './NodeControls.css';
 
-const NodeControls = ({ nodes, setNodes }) => {
+// Assuming Edge is part of the @xyflow/react library
+import { Edge } from '@xyflow/react';
+
+interface NodeControlsProps {
+  nodes: any;
+  setNodes: any;
+  api: {
+    fetchNodes(): Promise<Node[]>;
+    createNode(node: Partial<Node>): Promise<Node>;
+    updateNode(id: string, data: Partial<Node>): Promise<void>;
+    deleteNode(id: string): Promise<void>;
+    fetchEdges(): Promise<Edge[]>;
+    createEdge(edge: Partial<Edge>): Promise<Edge>;
+    deleteEdge(id: string): Promise<void>;
+  };
+}
+
+const NodeControls = ({ nodes, setNodes }: NodeControlsProps) => {
   const { fitView, zoomIn, zoomOut, setCenter } = useReactFlow();
 
   // Center the view on a specific node
@@ -71,10 +88,10 @@ const NodeControls = ({ nodes, setNodes }) => {
         <button onClick={handleFitView} className="control-btn">
           Fit View
         </button>
-        <button onClick={zoomIn} className="control-btn">
+        <button onClick={() => zoomIn()} className="control-btn">
           Zoom In
         </button>
-        <button onClick={zoomOut} className="control-btn">
+        <button onClick={() => zoomOut()} className="control-btn">
           Zoom Out
         </button>
       </div>

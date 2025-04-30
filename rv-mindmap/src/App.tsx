@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useCallback } from "react";
+import React, { useEffect,useState, useCallback } from "react";
 import "./App.css";
 import {
   ReactFlow,
@@ -9,12 +8,16 @@ import {
   applyEdgeChanges,
   addEdge,
   Edge,
-  Node,
+  Node as XYNode,
   Connection,
   NodeTypes,
   EdgeTypes,
   ReactFlowProvider,
 } from "@xyflow/react";
+
+// Alias the Node type from @xyflow/react to avoid conflicts with the global Node type
+type FlowNode = XYNode;
+type FlowEdge = Edge;
 import CustomEdge from "./components/CustomEdge";
 import "@xyflow/react/dist/style.css";
 import NodeManager from "./components/NodeManager";
@@ -23,6 +26,7 @@ import CustomNode from "./components/CustomNode";
 import "./components/CustomNode.css";
 import NodeControls from "./components/NodeControls";
 import "./components/NodeControls.css";
+import { api } from './services/api';
 
 // Define node and edge types
 const nodeTypes: NodeTypes = {
@@ -33,104 +37,6 @@ const edgeTypes: EdgeTypes = {
   custom: CustomEdge,
 };
 
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    data: { 
-      label: "My Project", 
-      description: "This is a sample project",
-      nodeType: "project",
-      dateOpened: new Date().toISOString().split('T')[0],
-      targetDate: "",
-      completionDate: "",
-      completed: false,
-      collapsed: false,
-      hasChildren: true,
-      comment: "This is the main project node"
-    },
-    position: { x: 0, y: 0 },
-    type: "custom",
-  },
-  {
-    id: "2",
-    data: { 
-      label: "Task 1", 
-      description: "First task to complete",
-      nodeType: "task",
-      dateOpened: new Date().toISOString().split('T')[0],
-      targetDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      completionDate: "",
-      completed: false,
-      collapsed: false,
-      hasChildren: true,
-      comment: ""
-    },
-    position: { x: 100, y: 100 },
-    type: "custom",
-  },
-  {
-    id: "3",
-    data: { 
-      label: "Subtask 1.1", 
-      description: "Subtask of Task 1",
-      nodeType: "task",
-      dateOpened: new Date().toISOString().split('T')[0],
-      targetDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      completionDate: "",
-      completed: false,
-      collapsed: false,
-      hasChildren: false,
-      comment: ""
-    },
-    position: { x: 150, y: 200 },
-    type: "custom",
-  },
-  {
-    id: "4",
-    data: { 
-      label: "Task 2", 
-      description: "Second task to complete",
-      nodeType: "task",
-      dateOpened: new Date().toISOString().split('T')[0],
-      targetDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      completionDate: "",
-      completed: false,
-      collapsed: false,
-      hasChildren: false,
-      comment: ""
-    },
-    position: { x: -100, y: 100 },
-    type: "custom",
-  }
-];
-
-const initialEdges: Edge[] = [
-  {
-    id: 'e1-2',
-    source: '1',
-    target: '2',
-    animated: true,
-    type: 'custom',
-    label: 'Task',
-  },
-  {
-    id: 'e1-4',
-    source: '1',
-    target: '4',
-    animated: true,
-    type: 'custom',
-    label: 'Task',
-  },
-  {
-    id: 'e2-3',
-    source: '2',
-    target: '3',
-    animated: true,
-    type: 'custom',
-    label: 'Subtask',
-  }
-];
-
 const FlowWithProvider = () => {
   return (
     <ReactFlowProvider>
@@ -140,30 +46,83 @@ const FlowWithProvider = () => {
 };
 
 function Flow() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+  const [nodes, setNodes] = useState<FlowNode[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const onNodesChange = useCallback(
-    (changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-  const onEdgesChange = useCallback(
-    (changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+  // Load initial data
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [nodesData, edgesData] = await Promise.all([
+          api.fetchNodes(),
+          api.fetchEdges()
+        ]);
+        setNodes(nodesData);
+        setEdges(edgesData);
+      } catch (error) {
+        console.error('Failed to load flow data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
-  const onConnect = useCallback(
-    (params: Connection) => {
-      const newEdge = {
-        ...params,
-        type: 'custom',
-        animated: true,
-        label: 'Connection'
-      };
-      return setEdges((eds) => addEdge(newEdge, eds));
-    },
-    []
-  );
+  const onNodesChange = useCallback(async (changes: any) => {
+    const updatedNodes = applyNodeChanges(changes, nodes);
+    setNodes(updatedNodes);
+
+    // Sync position changes with backend
+    for (const change of changes) {
+      if (change.type === 'position' && change.positionAbsolute) {
+        try {
+          await api.updateNode(change.id, {
+            position: change.position
+          });
+        } catch (error) {
+          console.error('Failed to update node position:', error);
+        }
+      }
+    }
+  }, [nodes]);
+
+  const onEdgesChange = useCallback(async (changes: any) => {
+    const updatedEdges = applyEdgeChanges(changes, edges);
+    setEdges(updatedEdges);
+
+    // Sync edge changes with backend
+    for (const change of changes) {
+      if (change.type === 'remove') {
+        try {
+          await api.deleteEdge(change.id);
+        } catch (error) {
+          console.error('Failed to delete edge:', error);
+        }
+      }
+    }
+  }, [edges]);
+
+  const onConnect = useCallback(async (params: Connection) => {
+    const newEdge = {
+      ...params,
+      id: `e${params.source}-${params.target}`,
+      type: 'custom',
+      animated: true,
+      label: 'Connection'
+    };
+
+    try {
+      const createdEdge = await api.createEdge(newEdge);
+      setEdges((eds) => addEdge(createdEdge, eds));
+    } catch (error) {
+      console.error('Failed to create edge:', error);
+    }
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="app-container">
@@ -189,12 +148,22 @@ function Flow() {
         </ReactFlow>
         <NodeManager 
           nodes={nodes} 
-          setNodes={setNodes} 
+          setNodes={setNodes}
+          api={api}
         />
         <NodeControls 
           nodes={nodes} 
-          setNodes={setNodes} 
+          setNodes={setNodes}
+          api={api}
         />
+        
+        {/* Help tooltip */}
+        <div className="help-tooltip">
+          <h4>Node Editing</h4>
+          <p>
+            <span className="shortcut">Click</span> Edit node label directly
+          </p>
+        </div>
       </div>
     </div>
   );

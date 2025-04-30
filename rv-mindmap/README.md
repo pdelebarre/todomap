@@ -9,6 +9,7 @@ A React-based mindmap application with advanced node management capabilities bui
 - **Edit Nodes**: Modify existing node content
 - **Delete Nodes**: Remove nodes from the mindmap
 - **Node Listing**: View all nodes in a convenient sidebar
+- **Node Reallocation**: Reassign nodes to different parent nodes using drag and drop
 
 ### Layout Controls
 - **Arrange Nodes**: Automatically arrange nodes in circle or grid layouts
@@ -56,6 +57,7 @@ A custom node component that displays:
 4. **Connecting Nodes**: Drag from a node's bottom handle to another node's top handle
 5. **Arranging Layout**: Use the Layout Controls panel to arrange nodes in different patterns
 6. **Focusing on Nodes**: Click a node name in the Focus Node list to center the view on that node
+7. **Reallocating Nodes**: Hold Shift and drag a node with the mouse to reassign it to a different parent node
 
 ## Technologies Used
 

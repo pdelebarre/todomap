@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
+
 import { v4 as uuidv4 } from 'uuid';
 import { useReactFlow } from '@xyflow/react';
 
-const NodeManager = ({ nodes, setNodes, onAddNode = null }) => {
+const NodeManager = ({ nodes, setNodes, api }) => {
   const { addEdges, getEdges, setEdges } = useReactFlow();
   
   const [nodeName, setNodeName] = useState('');
@@ -40,8 +40,22 @@ const NodeManager = ({ nodes, setNodes, onAddNode = null }) => {
     }
   }, [isEditing]);
 
+  // Reset form fields
+  const resetForm = useCallback(() => {
+    setNodeName('');
+    setNodeDescription('');
+    setNodeComment('');
+    setNodeType('task');
+    setParentNode('');
+    setDateOpened(new Date().toISOString().split('T')[0]);
+    setTargetDate('');
+    setCompletionDate('');
+    setCompleted(false);
+    setShowAdvanced(false);
+  }, []);
+
   // Create a new node
-  const handleAddNode = useCallback(() => {
+  const handleAddNode = useCallback(async () => {
     if (!nodeName.trim()) return;
     
     const newNode = {
@@ -49,14 +63,14 @@ const NodeManager = ({ nodes, setNodes, onAddNode = null }) => {
       data: { 
         label: nodeName,
         description: nodeDescription,
-        comment: nodeComment,
         nodeType: nodeType,
         dateOpened: dateOpened,
         targetDate: targetDate,
         completionDate: completionDate,
         completed: completed,
         collapsed: false,
-        hasChildren: false
+        hasChildren: false,
+        comment: nodeComment
       },
       position: {
         x: Math.random() * 300,
@@ -65,52 +79,28 @@ const NodeManager = ({ nodes, setNodes, onAddNode = null }) => {
       type: 'custom',
     };
     
-    setNodes((nds) => [...nds, newNode]);
-    
-    // If a parent is selected, create an edge
-    if (parentNode) {
-      // Create edge from parent to new node
-      const newEdge = {
-        id: `e${parentNode}-${newNode.id}`,
-        source: parentNode,
-        target: newNode.id,
-        animated: true,
-        type: 'custom',
-        label: nodeType === 'task' ? 'Task' : 'Subtask',
-      };
+    try {
+      const createdNode = await api.createNode(newNode);
+      setNodes((nds) => [...nds, createdNode]);
       
-      addEdges([newEdge]);
+      if (parentNode) {
+        const newEdge = {
+          id: `e${parentNode}-${createdNode.id}`,
+          source: parentNode,
+          target: createdNode.id,
+          animated: true,
+          type: 'custom',
+          label: nodeType === 'task' ? 'Task' : 'Subtask',
+        };
+        
+        await api.createEdge(newEdge);
+        addEdges([newEdge]);
+      }
       
-      // Update parent node to indicate it has children
-      setNodes((nds) =>
-        nds.map((node) =>
-          node.id === parentNode
-            ? { 
-                ...node, 
-                data: { 
-                  ...node.data, 
-                  hasChildren: true
-                } 
-              }
-            : node
-        )
-      );
-    }
-    
-    // Reset form
-    setNodeName('');
-    setNodeDescription('');
-    setNodeComment('');
-    setNodeType('task');
-    setParentNode('');
-    setTargetDate('');
-    setCompletionDate('');
-    setCompleted(false);
-    setDateOpened(new Date().toISOString().split('T')[0]);
-    setShowAdvanced(false);
-    
-    if (onAddNode) {
-      onAddNode(newNode);
+      // Reset form
+      resetForm();
+    } catch (error) {
+      console.error('Failed to create node:', error);
     }
   }, [
     nodeName, 
@@ -123,9 +113,9 @@ const NodeManager = ({ nodes, setNodes, onAddNode = null }) => {
     completionDate, 
     completed, 
     setNodes, 
-    onAddNode, 
-    nodes, 
-    addEdges
+    api, 
+    addEdges,
+    resetForm  // Add this dependency
   ]);
 
   // Update an existing node

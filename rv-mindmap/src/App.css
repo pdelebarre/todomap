@@ -93,6 +93,38 @@
   border-color: #a3f3c0;
 }
 
+/* Help tooltip */
+.help-tooltip {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 12px;
+  max-width: 300px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.help-tooltip h4 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+}
+
+.help-tooltip p {
+  margin: 5px 0;
+}
+
+.help-tooltip .shortcut {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  margin: 0 2px;
+}
+
 /* Responsive design */
 @media (max-width: 1200px) {
   .flow-container {

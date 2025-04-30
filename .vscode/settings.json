@@ -1,3 +1,6 @@
 {
-    "CodeGPT.apiKey": "Anthropic"
+  "CodeGPT.apiKey": "Anthropic",
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.jdt.ls.vmargs": "-javaagent:${HOME}/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar -Xbootclasspath/a:${HOME}/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar"
 }

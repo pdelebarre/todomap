@@ -1,0 +1,394 @@
+{
+  "info": {
+    "name": "TodoMap API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Node",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Create Node\", () => {",
+              "    pm.expect(pm.response.code).to.equal(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"node_id\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": {\n    \"label\": \"Test Project\",\n    \"description\": \"Test Description\",\n    \"nodeType\": \"project\",\n    \"dateOpened\": \"2025-04-22\",\n    \"targetDate\": \"2025-05-22\",\n    \"completed\": false\n  },\n  \"position\": { \"x\": 100, \"y\": 100 },\n  \"type\": \"custom\"\n}"
+        },
+        "url": "{{base_url}}/nodes"
+      }
+    },
+    {
+      "name": "Read Node",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response has correct id\", function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.id).to.eql(pm.collectionVariables.get(\"node_id\"));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/nodes/{{node_id}}"
+      }
+    },
+    {
+      "name": "Update Node",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Label is updated\", function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.label).to.eql(\"Updated Project\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": {\n    \"label\": \"Updated Project\",\n    \"description\": \"Updated Description\",\n    \"nodeType\": \"project\",\n    \"dateOpened\": \"2025-04-22\",\n    \"targetDate\": \"2025-05-22\",\n    \"completed\": true\n  },\n  \"position\": { \"x\": 200, \"y\": 200 },\n  \"type\": \"custom\"\n}"
+        },
+        "url": "{{base_url}}/nodes/{{node_id}}"
+      }
+    },
+    {
+      "name": "Delete Node",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/nodes/{{node_id}}"
+      }
+    },
+    {
+      "name": "Verify Node Deletion",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/nodes/{{node_id}}"
+      }
+    },
+    {
+      "name": "Create Node A",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Create Node A\", () => {",
+              "    pm.expect(pm.response.code).to.equal(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"node_id_a\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": {\n    \"label\": \"Node A\",\n    \"description\": \"First Node\",\n    \"nodeType\": \"project\",\n    \"dateOpened\": \"2025-04-22\",\n    \"targetDate\": \"2025-05-22\",\n    \"completed\": false\n  },\n  \"position\": { \"x\": 100, \"y\": 100 },\n  \"type\": \"custom\"\n}"
+        },
+        "url": "{{base_url}}/nodes"
+      }
+    },
+    {
+      "name": "Create Node B",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Create Node B\", () => {",
+              "    pm.expect(pm.response.code).to.equal(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"node_id_b\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": {\n    \"label\": \"Node B\",\n    \"description\": \"Second Node\",\n    \"nodeType\": \"task\",\n    \"dateOpened\": \"2025-04-22\",\n    \"targetDate\": \"2025-05-23\",\n    \"completed\": false\n  },\n  \"position\": { \"x\": 200, \"y\": 200 },\n  \"type\": \"custom\"\n}"
+        },
+        "url": "{{base_url}}/nodes"
+      }
+    },
+    {
+      "name": "Create Edge",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Edge created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"edge_id\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": \"{{node_id_a}}\",\n  \"target\": \"{{node_id_b}}\",\n  \"type\": \"custom\",\n  \"animated\": true,\n  \"label\": \"Connection\"\n}"
+        },
+        "url": "{{base_url}}/edges"
+      }
+    },
+    {
+      "name": "Delay 1s before Update Edge",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "setTimeout(function(){}, 1000);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/nodes/{{node_id_a}}"
+      }
+    },
+    {
+      "name": "Read Edge",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Edge has correct id\", function () {",
+              "    pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"edge_id\"));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/edges/{{edge_id}}"
+      }
+    },
+    {
+      "name": "Update Edge",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Edge label is updated\", function () {",
+              "    pm.expect(pm.response.json().label).to.eql(\"Updated Connection\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": \"{{node_id_a}}\",\n  \"target\": \"{{node_id_b}}\",\n  \"type\": \"custom\",\n  \"animated\": true,\n  \"label\": \"Updated Connection\"\n}"
+        },
+        "url": "{{base_url}}/edges/{{edge_id}}"
+      }
+    },
+    {
+      "name": "Delete Edge",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/edges/{{edge_id}}"
+      }
+    },
+    {
+      "name": "Verify Edge Deletion",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/edges/{{edge_id}}"
+      }
+    },
+    {
+      "name": "Get All Nodes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response is an array\", function () {",
+              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/nodes"
+      }
+    },
+    {
+      "name": "Get All Edges",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response is an array\", function () {",
+              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/edges"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api"
+    }
+  ]
+}
