@@ -57,7 +57,15 @@ const NodeManager = ({ nodes, setNodes, api }) => {
   // Create a new node
   const handleAddNode = useCallback(async () => {
     if (!nodeName.trim()) return;
-    
+
+    // Calculate position based on current nodes count
+    const nodeIndex = nodes.length;
+    const nodeSpacingY = 120; // vertical space between nodes
+    const position = {
+      x: 100, // fixed horizontal position for all nodes
+      y: 100 + nodeIndex * nodeSpacingY,
+    };
+
     const newNode = {
       id: uuidv4(),
       data: { 
@@ -72,10 +80,7 @@ const NodeManager = ({ nodes, setNodes, api }) => {
         hasChildren: false,
         comment: nodeComment
       },
-      position: {
-        x: Math.random() * 300,
-        y: Math.random() * 300,
-      },
+      position,
       type: 'custom',
     };
     

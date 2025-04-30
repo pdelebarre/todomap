@@ -181,6 +181,10 @@ const CustomNode = ({ id, data, isConnectable }) => {
       className={`custom-node ${nodeTypeClass} ${
         data.completed ? "completed-node" : ""
       } ${isDragging ? "dragging" : ""} ${potentialParent ? "can-drop" : ""}`}
+      style={{
+        background: data.completed ? "#e0e0e0" : undefined, // grey background if completed
+        // ...other styles...
+      }}
       onMouseDown={() => {}}
       ref={nodeRef}
       onFocus={handleFocus}
