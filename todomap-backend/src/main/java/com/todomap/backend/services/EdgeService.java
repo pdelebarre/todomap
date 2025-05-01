@@ -1,18 +1,20 @@
 package com.todomap.backend.services;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.todomap.backend.dtos.EdgeDTO;
 import com.todomap.backend.mappers.EntityDTOMapper;
 import com.todomap.backend.models.Edge;
 import com.todomap.backend.models.Node;
 import com.todomap.backend.repositories.EdgeRepository;
 import com.todomap.backend.repositories.NodeRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -71,7 +73,8 @@ public class EdgeService {
     @Transactional
     public void deleteEdge(String id) {
         if (!edgeRepository.existsById(id)) {
-            throw new EntityNotFoundException("Edge not found with id: " + id);
+            // Edge does not exist, nothing to delete (idempotent)
+            return;
         }
         edgeRepository.deleteById(id);
     }

@@ -1,9 +1,8 @@
-import React, { useCallback } from 'react';
-import { useReactFlow } from '@xyflow/react';
-import './NodeControls.css';
-
-// Assuming Edge is part of the @xyflow/react library
-import { Edge } from '@xyflow/react';
+// src/components/NodeControls.tsx
+import React, { useCallback } from "react";
+import { useReactFlow } from "@xyflow/react";
+import "./NodeControls.css";
+import { Edge } from "@xyflow/react";
 
 interface NodeControlsProps {
   nodes: any;
@@ -19,35 +18,43 @@ interface NodeControlsProps {
   };
 }
 
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 100;
+const PADDING = 40;
+
 const NodeControls = ({ nodes, setNodes }: NodeControlsProps) => {
   const { fitView, zoomIn, zoomOut, setCenter } = useReactFlow();
 
-  // Center the view on a specific node
-  const centerNode = useCallback((nodeId) => {
-    const node = nodes.find((n) => n.id === nodeId);
-    if (node) {
-      setCenter(node.position.x, node.position.y, { duration: 800, zoom: 1.5 });
-    }
-  }, [nodes, setCenter]);
+  const centerNode = useCallback(
+    (nodeId) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (node) {
+        setCenter(node.position.x, node.position.y, {
+          duration: 800,
+          zoom: 1.5,
+        });
+      }
+    },
+    [nodes, setCenter]
+  );
 
-  // Fit view to see all nodes
   const handleFitView = useCallback(() => {
     fitView({ padding: 0.2, duration: 800 });
   }, [fitView]);
 
-  // Arrange nodes in a circle layout
   const arrangeCircle = useCallback(() => {
     if (nodes.length <= 1) return;
 
-    const centerX = 0;
-    const centerY = 0;
-    const radius = Math.max(nodes.length * 30, 200);
+    const radius = Math.max(
+      ((NODE_WIDTH + PADDING) * nodes.length) / (2 * Math.PI),
+      200
+    );
     const angleStep = (2 * Math.PI) / nodes.length;
 
     const updatedNodes = nodes.map((node, index) => {
       const angle = index * angleStep;
-      const x = centerX + radius * Math.cos(angle);
-      const y = centerY + radius * Math.sin(angle);
+      const x = radius * Math.cos(angle);
+      const y = radius * Math.sin(angle);
 
       return {
         ...node,
@@ -59,13 +66,12 @@ const NodeControls = ({ nodes, setNodes }: NodeControlsProps) => {
     setTimeout(() => fitView({ padding: 0.2, duration: 800 }), 50);
   }, [nodes, setNodes, fitView]);
 
-  // Arrange nodes in a grid layout
   const arrangeGrid = useCallback(() => {
     if (nodes.length <= 1) return;
 
-    const nodeCount = nodes.length;
-    const cols = Math.ceil(Math.sqrt(nodeCount));
-    const gridSize = 200;
+    const cols = Math.ceil(Math.sqrt(nodes.length));
+    const cellWidth = NODE_WIDTH + PADDING;
+    const cellHeight = NODE_HEIGHT + PADDING;
 
     const updatedNodes = nodes.map((node, index) => {
       const col = index % cols;
@@ -73,7 +79,7 @@ const NodeControls = ({ nodes, setNodes }: NodeControlsProps) => {
 
       return {
         ...node,
-        position: { x: col * gridSize, y: row * gridSize },
+        position: { x: col * cellWidth, y: row * cellHeight },
       };
     });
 
@@ -98,16 +104,10 @@ const NodeControls = ({ nodes, setNodes }: NodeControlsProps) => {
 
       <h4>Arrange Nodes</h4>
       <div className="control-buttons">
-        <button 
-          onClick={arrangeCircle} 
-          className="layout-btn circle-layout"
-        >
+        <button onClick={arrangeCircle} className="layout-btn circle-layout">
           Circle Layout
         </button>
-        <button 
-          onClick={arrangeGrid} 
-          className="layout-btn grid-layout"
-        >
+        <button onClick={arrangeGrid} className="layout-btn grid-layout">
           Grid Layout
         </button>
       </div>
@@ -121,7 +121,7 @@ const NodeControls = ({ nodes, setNodes }: NodeControlsProps) => {
                 key={node.id}
                 onClick={() => centerNode(node.id)}
                 className="focus-btn"
-                title={node.data.description || ''}
+                title={node.data.description || ""}
               >
                 {node.data.label}
               </button>

@@ -1,33 +1,33 @@
 package com.todomap.backend.services;
 
-import com.todomap.backend.dtos.NodeDTO;
-import com.todomap.backend.mappers.EntityDTOMapper;
-import com.todomap.backend.models.Node;
-import com.todomap.backend.repositories.NodeRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.todomap.backend.dtos.NodeDTO;
+import com.todomap.backend.mappers.EntityDTOMapper;
+import com.todomap.backend.models.Node;
+import com.todomap.backend.repositories.EdgeRepository;
+import com.todomap.backend.repositories.NodeRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class NodeService {
 
     private final NodeRepository nodeRepository;
+    private final EdgeRepository edgeRepository;
     private final EntityDTOMapper mapper;
-
-    public NodeService(NodeRepository nodeRepository, EntityDTOMapper mapper) {
-        this.nodeRepository = nodeRepository;
-        this.mapper = mapper;
-    }
+    private final NodeDeletionService nodeDeletionService;
 
     @Transactional(readOnly = true)
     public List<NodeDTO> getAllNodes() {
         return nodeRepository.findAll().stream()
                 .map(mapper::toNodeDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -69,27 +69,32 @@ public class NodeService {
     public List<NodeDTO> getNodesByType(String nodeType) {
         return nodeRepository.findByNodeType(nodeType).stream()
                 .map(mapper::toNodeDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<NodeDTO> getRootNodes() {
         return nodeRepository.findRootNodes().stream()
                 .map(mapper::toNodeDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<NodeDTO> getCompletedNodes() {
         return nodeRepository.findCompletedNodes().stream()
                 .map(mapper::toNodeDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<NodeDTO> getNodesWithTargetDate() {
         return nodeRepository.findNodesWithTargetDate().stream()
                 .map(mapper::toNodeDTO)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    @Transactional
+    public void deleteNodeAndDescendants(String nodeId) {
+        nodeDeletionService.deleteNodeAndDescendants(nodeId);
     }
 }

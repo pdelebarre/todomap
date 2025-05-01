@@ -383,6 +383,271 @@
         "method": "GET",
         "url": "{{base_url}}/edges"
       }
+    },
+    {
+      "name": "Create Parent Node",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Create Parent Node\", () => {",
+              "    pm.expect(pm.response.code).to.equal(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"parent_id\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": { \"label\": \"Parent\", \"nodeType\": \"project\" },\n  \"position\": { \"x\": 0, \"y\": 0 },\n  \"type\": \"custom\"\n}"
+        },
+        "url": "{{base_url}}/nodes"
+      }
+    },
+    {
+      "name": "Create Child Node",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Create Child Node\", () => {",
+              "    pm.expect(pm.response.code).to.equal(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"child_id\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": { \"label\": \"Child\", \"nodeType\": \"task\" },\n  \"position\": { \"x\": 0, \"y\": 100 },\n  \"type\": \"custom\"\n}"
+        },
+        "url": "{{base_url}}/nodes"
+      }
+    },
+    {
+      "name": "Create Grandchild Node",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Create Grandchild Node\", () => {",
+              "    pm.expect(pm.response.code).to.equal(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"grandchild_id\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": { \"label\": \"Grandchild\", \"nodeType\": \"task\" },\n  \"position\": { \"x\": 0, \"y\": 200 },\n  \"type\": \"custom\"\n}"
+        },
+        "url": "{{base_url}}/nodes"
+      }
+    },
+    {
+      "name": "Create Edge Parent-Child",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Edge Parent-Child created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"edge_parent_child_id\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": \"{{parent_id}}\",\n  \"target\": \"{{child_id}}\",\n  \"type\": \"custom\",\n  \"animated\": true,\n  \"label\": \"Parent-Child\"\n}"
+        },
+        "url": "{{base_url}}/edges"
+      }
+    },
+    {
+      "name": "Create Edge Child-Grandchild",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Edge Child-Grandchild created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(pm.response.json()).to.have.property('id');",
+              "    pm.collectionVariables.set(\"edge_child_grandchild_id\", pm.response.json().id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": \"{{child_id}}\",\n  \"target\": \"{{grandchild_id}}\",\n  \"type\": \"custom\",\n  \"animated\": true,\n  \"label\": \"Child-Grandchild\"\n}"
+        },
+        "url": "{{base_url}}/edges"
+      }
+    },
+    {
+      "name": "Delete Parent Node (Cascade)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/nodes/{{parent_id}}"
+      }
+    },
+    {
+      "name": "Verify Parent Node Deleted",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/nodes/{{parent_id}}"
+      }
+    },
+    {
+      "name": "Verify Child Node Deleted",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/nodes/{{child_id}}"
+      }
+    },
+    {
+      "name": "Verify Grandchild Node Deleted",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/nodes/{{grandchild_id}}"
+      }
+    },
+    {
+      "name": "Verify Edge Parent-Child Deleted",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/edges/{{edge_parent_child_id}}"
+      }
+    },
+    {
+      "name": "Verify Edge Child-Grandchild Deleted",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/edges/{{edge_child_grandchild_id}}"
+      }
     }
   ],
   "variable": [

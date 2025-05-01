@@ -1,5 +1,8 @@
 import React, { memo, useCallback, useState, useRef, useEffect } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
+import { api } from '../services/api';
+
+const NODE_PADDING = 40;
 
 const CustomNode = ({ id, data, isConnectable }) => {
   const { setNodes, getNode, getNodes, setEdges, getEdges } = useReactFlow();
@@ -35,6 +38,56 @@ const CustomNode = ({ id, data, isConnectable }) => {
     if (!dateString) return "";
     return new Date(dateString).toLocaleDateString();
   };
+
+  const findDescendants = (nodeId, nodes, edges, includeCollapsed = false) => {
+    const childEdges = edges.filter((e) => e.source === nodeId);
+    const childIds = childEdges.map((e) => e.target);
+    let descendants = [...childIds];
+    for (const childId of childIds) {
+      const childNode = nodes.find((n) => n.id === childId);
+      if (!childNode) continue;
+      if (includeCollapsed || !childNode.data.collapsed) {
+        const childDescendants = findDescendants(
+          childId,
+          nodes,
+          edges,
+          includeCollapsed
+        );
+        descendants = [...descendants, ...childDescendants];
+      }
+    }
+    return descendants;
+  };
+
+  const findDirectChildren = (nodeId, nodes, edges) => {
+    const childEdges = edges.filter((e) => e.source === nodeId);
+    return childEdges.map((e) => e.target);
+  };
+
+  const repositionNodesToAvoidOverlap = () => {
+    const allNodes = getNodes();
+    const updatedNodes = [...allNodes];
+    for (let i = 0; i < updatedNodes.length; i++) {
+      for (let j = i + 1; j < updatedNodes.length; j++) {
+        const nodeA = updatedNodes[i];
+        const nodeB = updatedNodes[j];
+        if (!nodeA.hidden && !nodeB.hidden) {
+          const dx = nodeB.position.x - nodeA.position.x;
+          const dy = nodeB.position.y - nodeA.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < NODE_PADDING) {
+            updatedNodes[j].position.x += NODE_PADDING;
+            updatedNodes[j].position.y += NODE_PADDING;
+          }
+        }
+      }
+    }
+    setNodes(updatedNodes);
+  };
+
+  useEffect(() => {
+    repositionNodesToAvoidOverlap();
+  }, []);
 
   const toggleCollapsed = useCallback(() => {
     setNodes((nodes) =>
@@ -74,35 +127,6 @@ const CustomNode = ({ id, data, isConnectable }) => {
     }
   }, [id, setNodes, getNode, getNodes, getEdges, setEdges]);
 
-  const findDescendants = (nodeId, nodes, edges, includeCollapsed = false) => {
-    const childEdges = edges.filter((e) => e.source === nodeId);
-    const childIds = childEdges.map((e) => e.target);
-    let descendants = [...childIds];
-    for (const childId of childIds) {
-      const childNode = nodes.find((n) => n.id === childId);
-      if (!childNode) continue;
-      if (includeCollapsed || !childNode.data.collapsed) {
-        const childDescendants = findDescendants(
-          childId,
-          nodes,
-          edges,
-          includeCollapsed
-        );
-        descendants = [...descendants, ...childDescendants];
-      }
-    }
-    return descendants;
-  };
-
-  const findDirectChildren = (nodeId, nodes, edges) => {
-    const childEdges = edges.filter((e) => e.source === nodeId);
-    return childEdges.map((e) => e.target);
-  };
-
-  const nodeTypeClass =
-    data.nodeType === "project" ? "project-node" : "task-node";
-  const hasChildren = data.hasChildren || false;
-
   const handleClick = useCallback(
     (event) => {
       event.stopPropagation();
@@ -139,13 +163,7 @@ const CustomNode = ({ id, data, isConnectable }) => {
     setNodes((nodes) =>
       nodes.map((node) =>
         node.id === id
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                ...editFields,
-              },
-            }
+          ? { ...node, data: { ...node.data, ...editFields } }
           : node
       )
     );
@@ -163,33 +181,42 @@ const CustomNode = ({ id, data, isConnectable }) => {
     [handleEditComplete]
   );
 
-  const handleFocus = () => {
-    focusCounter.current++;
-  };
-
+  const handleFocus = () => focusCounter.current++;
   const handleBlur = () => {
     focusCounter.current--;
     setTimeout(() => {
-      if (focusCounter.current <= 0) {
-        handleEditComplete();
-      }
+      if (focusCounter.current <= 0) handleEditComplete();
     }, 10);
   };
+
+  // Delete node and its descendants and save to backend
+  const handleDelete = useCallback(async () => {
+    const allNodes = getNodes();
+    const allEdges = getEdges();
+    const descendants = findDescendants(id, allNodes, allEdges, true);
+    const toDelete = [id, ...descendants];
+    if (window.confirm(`Delete this node and its ${descendants.length} descendant(s)?`)) {
+      // Call API for each node to delete
+      await Promise.all(toDelete.map((nodeId) => api.deleteNode(nodeId)));
+      setNodes((nodes) => nodes.filter((node) => !toDelete.includes(node.id)));
+      setEdges((edges) => edges.filter((edge) => !toDelete.includes(edge.source) && !toDelete.includes(edge.target)));
+    }
+  }, [id, getNodes, getEdges, setNodes, setEdges, findDescendants]);
+
+  const nodeTypeClass =
+    data.nodeType === "project" ? "project-node" : "task-node";
+  const hasChildren = data.hasChildren || false;
 
   return (
     <div
       className={`custom-node ${nodeTypeClass} ${
         data.completed ? "completed-node" : ""
       } ${isDragging ? "dragging" : ""} ${potentialParent ? "can-drop" : ""}`}
-      style={{
-        background: data.completed ? "#e0e0e0" : undefined, // grey background if completed
-        // ...other styles...
-      }}
-      onMouseDown={() => {}}
+      style={{ background: data.completed ? "#e0e0e0" : undefined }}
       ref={nodeRef}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      tabIndex={-1} // required to capture blur/focus events on div
+      tabIndex={-1}
     >
       <Handle
         type="target"
@@ -209,6 +236,15 @@ const CustomNode = ({ id, data, isConnectable }) => {
               {data.collapsed ? "▶" : "▼"}
             </div>
           )}
+          {/* Delete button */}
+          <button
+            className="node-delete-btn"
+            title="Delete node and its children"
+            style={{ marginLeft: 4, color: '#c00', background: 'none', border: 'none', cursor: 'pointer' }}
+            onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+          >
+            🗑️
+          </button>
           {isEditing ? (
             <div style={{ width: "100%" }}>
               <input
